@@ -1,49 +1,66 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, StyleSheet} from 'react-native';
 import {Card, ListItem, Button} from 'react-native-elements';
-import $axios from '../utils/http';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import $axios from '../utils/http';
 
-export default function Todoed() {
-  let [done, setDone] = useState([]);
+export default function Todoes() {
+  const [todoes, setTodos] = useState([]);
 
   useEffect(() => {
-    const fetchDone = async () => {
+    const fetchTodos = async () => {
       const token = await AsyncStorage.getItem('access_token');
-      const {data} = await $axios.get('/profile/todoed', {
+      let {data} = await $axios.get('/profile/todoes', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setDone(data.todoes);
+      setTodos(data.todoes);
     };
-    fetchDone();
-  }, [done]);
+    fetchTodos();
+  }, [todoes]);
 
-  const removeDone = async (id, j) => {
+  const deleteTodo = async (id, j) => {
     const token = await AsyncStorage.getItem('access_token');
     await $axios.delete(`/profile/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    done.splice(j, 1);
+    todoes.splice(j, 1);
+  };
+
+  const done = async (id, j) => {
+    const token = await AsyncStorage.getItem('access_token');
+    await $axios.patch(
+      `/profile/${id}`,
+      {
+        status: true,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    todoes.splice(j, 1);
   };
 
   return (
-    <View style={styles.inputStyle}>
+    <View style={styles.container}>
       <Card containerStyle={{width: '90%'}}>
-        <Card.Title>Todoed</Card.Title>
+        <Card.Title>Todos</Card.Title>
         <Card.Divider />
-        {done.map((i, j) => (
+        {todoes.map((i, j) => (
           <ListItem key={j}>
             <ListItem.Content>
               <ListItem.Title>{i.text}</ListItem.Title>
             </ListItem.Content>
+            <Button title="เสร็จ" onPress={() => done(i._id, j)} />
             <Button
               title="ลบ"
               type="clear"
-              onPress={() => removeDone(i._id, j)}
+              onPress={() => deleteTodo(i._id, j)}
             />
           </ListItem>
         ))}
@@ -53,7 +70,7 @@ export default function Todoed() {
 }
 
 const styles = StyleSheet.create({
-  inputStyle: {
+  container: {
     width: '100%',
   },
 });

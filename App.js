@@ -7,10 +7,10 @@
  */
 
 import React from 'react';
-import Home from './src/Home';
+import SigIn from './src/SignIn';
 
 const App: () => React$Node = () => {
-  return <Home />;
+  return <SigIn />;
 };
 
 export default App;
